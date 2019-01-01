@@ -7,15 +7,15 @@ export const usersRouter = express.Router();
 
 usersRouter.param('userId', (req, res, next, userId) => {
   //проверяем userId и либо присоединяем его к объекту запроса, либо выкидываем ошибку
-  if(req.params.userId) {
-    req.userId = req.params.userId;
+  if(userId) {
+    req.userId = userId;
     return next();
   }
   next(new Error('incorrect userId format'));
 });
 
 usersRouter.get('/', (req, res, next) => {
-  return UserModel
+  UserModel
     .find({})
     .then(response => res.send(response))
     .catch(err => next(err));
@@ -26,36 +26,38 @@ usersRouter.get('/:userId', (req, res, next) => {
   const query = {
     _id: ObjectID(id)
   };
-  return UserModel
+  UserModel
     .find(query)
     .then(response => res.send(response))
     .catch(err => next(err));
 });
 
 usersRouter.post('/', (req, res, next) => {
-  const user = {name: req.body.name};
+  const user = new UserModel({
+    name: req.body.name,
+    age: req.body.age
+  });
+  user.save()
+      .then(newUser => res.send(newUser))
+      .catch(err => next(err));
 
-  return UserModel
-    .insertOne(user)
-    .then(() => res.send(user))
-    .catch(err => next(err));
 });
 
-usersRouter.put('/', (req, res, next) => {
-  const { id, update } = req.body;
-
-  return UserModel
+usersRouter.put('/:userId', (req, res, next) => {
+  const id = req.userId;
+  const update = req.body.update;
+  UserModel
     .updateOne({_id: ObjectID(id)}, {$set: update})
-    .then(response => res.send(response))
+    .then(response => res.status(201).send(response))
     .catch(err => next(err));
 });
 
 usersRouter.delete('/:userId', (req, res, next) => {
   const id = req.userId;
 
-  return UserModel
+  UserModel
     .deleteOne({_id: ObjectID(id)})
-    .then(response => res.send(response, id))
+    .then(response => res.status(204).send(response, id))
     .catch(err => next(err));
 });
 

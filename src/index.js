@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
+import { config } from './config';
 import { usersRouter } from './mongo/routers/users';
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(morgan('dev'));
 
 app.use((req, res, next) => {
   // разрешены кроссдоменные запросы с этих url
-  res.append('Access-Control-Allow-Origin', ['http://localhost:8081']);
+  res.append('Access-Control-Allow-Origin', [config.CLIENT_ORIGIN]);
   // перечислены разрешённые заголовки (для ответа на options)
   res.append('Access-Control-Allow-Headers', 'Content-Type');
   //перечислены разрешённые методы (для ответа на options)
@@ -28,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/users', usersRouter);
+ app.use('/users', usersRouter);
 
 app.use('/api/auth', (req, res) => {
   res.status(400).json({errors: {global: 'invalid credentials'}});
@@ -38,22 +39,17 @@ app.use('/api/auth', (req, res) => {
 
 
 // порт
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || config.PORT;
 // URL подключения (стандартный для монгоДБ)
-const url = 'mongodb://localhost:27017';
-const databaseName = 'users';
-
-/*
-*  Для подключения выполнить в командной строке указав правильный путь к базе данных
-*  "C:\Program Files\MongoDB\Server\4.0\bin\mongod.exe" --dbpath="c:\Users\User\Desktop\db"
-*  */
+const url = config.MONGODB_CONNECTION_URL;
+const databaseName = config.DATABASE_NAME;
 
 mongoose.connect(`${url}/${databaseName}`, {useNewUrlParser: true})
   .then(() => {
-    console.log('Mongoose is here');
-    app.listen(PORT, () => console.log(`Подлюкчено, порт: ${PORT}`));
+    console.log('mongodb: соединение установлено');
+    app.listen(PORT, () => console.log(`express RESTApi: соединение установлено, порт: ${PORT}`));
   })
-  .catch(err => console.log('An error occured:', err));
+  .catch(err => console.log('mongodb: не удалось подключиться:', err));
 
 
 

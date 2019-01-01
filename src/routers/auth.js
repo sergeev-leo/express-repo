@@ -33,5 +33,6 @@ authRouter.post('/register', (req, res, next) => {
 
 authRouter.post('/logout', (req, res, next) => {
     req.session.destroy();
+    //TODO добавить редирект, когда будет куда редиректить)
     res.send({info: 'здесь будет редирект'});
 });

@@ -6,8 +6,10 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 
 import { config } from './config';
-import { usersRouter } from './mongo/routers/users';
-import { authRouter } from "./mongo/routers/auth";
+import { usersRouter } from './routers/users';
+import { authRouter } from "./routers/auth";
+import {recipesRouter} from "./routers/recipes";
+import {authState} from "./middlewares/authState";
 
 var corsOptions = {
     origin: 'http://localhost:3000',
@@ -30,17 +32,6 @@ app.use(session({
 }));
 
 
-// надо удалить потом
-app.use((req, res, next) => {
-    req.session.visitsNumber += 1;
-    next();
-});
-app.get('/', (req, res, next) => {
-    res.send({visits: req.session.visitsNumber});
-});
-
-
-
 app.use((req, res, next) => {
   // разрешены кроссдоменные запросы с этих url
   res.append('Access-Control-Allow-Origin', [config.CLIENT_ORIGIN]);
@@ -56,9 +47,9 @@ app.use((req, res, next) => {
   next();
 });
 
- app.use('/users', cors(corsOptions), usersRouter);
-
 app.use('/auth', authRouter);
+app.use('/users', cors(corsOptions), authState, usersRouter);
+app.use('/recipes', cors(corsOptions), authState, recipesRouter);
 
 
 

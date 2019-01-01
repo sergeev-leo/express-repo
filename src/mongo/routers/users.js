@@ -1,12 +1,12 @@
 import { ObjectID } from 'mongodb';
 import express from 'express';
+import validator from 'validator';
 import { UserModel } from '../models/User';
 
 export const usersRouter = express.Router();
 
 
 usersRouter.param('userId', (req, res, next, userId) => {
-  //проверяем userId и либо присоединяем его к объекту запроса, либо выкидываем ошибку
   if(userId) {
     req.userId = userId;
     return next();
@@ -33,6 +33,9 @@ usersRouter.get('/:userId', (req, res, next) => {
 });
 
 usersRouter.post('/', (req, res, next) => {
+  if(!validator.isInt(req.body.age))
+    next(new Error('Incorrect age format'));
+
   const user = new UserModel({
     name: req.body.name,
     age: req.body.age
@@ -45,9 +48,12 @@ usersRouter.post('/', (req, res, next) => {
 
 usersRouter.put('/:userId', (req, res, next) => {
   const id = req.userId;
-  const update = req.body.update;
+
+  if(req.body.age && !validator.isInt(req.body.age))
+    next(new Error('Incorrect age format'));
+
   UserModel
-    .updateOne({_id: ObjectID(id)}, {$set: update})
+    .updateOne({_id: ObjectID(id)}, {$set: req.body})
     .then(response => res.status(201).send(response))
     .catch(err => next(err));
 });
@@ -57,7 +63,7 @@ usersRouter.delete('/:userId', (req, res, next) => {
 
   UserModel
     .deleteOne({_id: ObjectID(id)})
-    .then(response => res.status(204).send(response, id))
+    .then(response => res.status(204).send(response))
     .catch(err => next(err));
 });
 

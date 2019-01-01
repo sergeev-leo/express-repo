@@ -1,11 +1,20 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import session from 'express-session';
 import morgan from 'morgan';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
 import { config } from './config';
 import { usersRouter } from './mongo/routers/users';
+import { authRouter } from "./mongo/routers/auth";
+
+var corsOptions = {
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200
+}
+
+const MongoStore = require('connect-mongo')(session);
 
 const app = express();
 
@@ -13,6 +22,24 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(morgan('dev'));
+
+
+app.use(session({
+    secret: config.SESSION_SECRET_PHRASE,
+    store: new MongoStore({mongooseConnection: mongoose.connection})
+}));
+
+
+// надо удалить потом
+app.use((req, res, next) => {
+    req.session.visitsNumber += 1;
+    next();
+});
+app.get('/', (req, res, next) => {
+    res.send({visits: req.session.visitsNumber});
+});
+
+
 
 app.use((req, res, next) => {
   // разрешены кроссдоменные запросы с этих url
@@ -29,11 +56,9 @@ app.use((req, res, next) => {
   next();
 });
 
- app.use('/users', usersRouter);
+ app.use('/users', cors(corsOptions), usersRouter);
 
-app.use('/api/auth', (req, res) => {
-  res.status(400).json({errors: {global: 'invalid credentials'}});
-});
+app.use('/auth', authRouter);
 
 
 

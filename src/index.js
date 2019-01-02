@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 import { usersRouter } from './routers/users';
 import { authRouter } from "./routers/auth";
 import {recipesRouter} from "./routers/recipes";
-import {authState} from "./middlewares/authState";
+import {getAuthState, verifyToken} from "./middlewares/auth";
 
 dotenv.config();
 
@@ -38,8 +38,8 @@ app.use(session({
 
 
 app.use('/auth', authRouter);
-app.use('/users', cors(corsOptions), authState, usersRouter);
-app.use('/recipes', cors(corsOptions), authState, recipesRouter);
+app.use('/users', cors(corsOptions), getAuthState, verifyToken, usersRouter);
+app.use('/recipes', cors(corsOptions), getAuthState, recipesRouter);
 
 
 

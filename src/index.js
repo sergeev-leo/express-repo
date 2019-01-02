@@ -11,11 +11,13 @@ import { authRouter } from "./routers/auth";
 import {recipesRouter} from "./routers/recipes";
 import {authState} from "./middlewares/authState";
 
+// опции для cors-middleware
 var corsOptions = {
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200
 }
 
+// создаём MongoStore для хранения сессии
 const MongoStore = require('connect-mongo')(session);
 
 const app = express();
@@ -25,27 +27,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(morgan('dev'));
 
-
+// настройки для session-middleware, указываем где в монго хранить сессию
 app.use(session({
-    secret: config.SESSION_SECRET_PHRASE,
-    store: new MongoStore({mongooseConnection: mongoose.connection})
+  secret: config.SESSION_SECRET_PHRASE,
+  store: new MongoStore({mongooseConnection: mongoose.connection})
 }));
 
 
-app.use((req, res, next) => {
-  // разрешены кроссдоменные запросы с этих url
-  res.append('Access-Control-Allow-Origin', [config.CLIENT_ORIGIN]);
-  // перечислены разрешённые заголовки (для ответа на options)
-  res.append('Access-Control-Allow-Headers', 'Content-Type');
-  //перечислены разрешённые методы (для ответа на options)
-  res.append('Access-Control-Allow-Methods', ['POST', 'GET', 'PUT', 'DELETE']);
-  // указываются имена заголовков, которые необходимо разрешить вручную
-  res.append('Access-Control-Expose-Headers', '');
-  // разрешение передачи cookies и http-авторизации
-  res.append('Access-Control-Allow-Credentials', 'true');
-
-  next();
-});
 
 app.use('/auth', authRouter);
 app.use('/users', cors(corsOptions), authState, usersRouter);

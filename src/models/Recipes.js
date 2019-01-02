@@ -7,13 +7,8 @@ const RecipeSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-  },
-  created: {
-    type: Date,
-    default: Date.now()
   }
+}, { timestamps: true });
 
-});
 
-
-export const RecipeModel = mongoose.model('recipes', RecipeSchema);
+export const Recipe = mongoose.model('recipe', RecipeSchema);

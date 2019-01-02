@@ -33,8 +33,9 @@ usersRouter.post('/', (req, res, next) => {
     next(new Error('Incorrect age format'));
 
   const user = new User({
-    name: req.body.name,
-    age: req.body.age
+    userName: req.body.userName,
+    age: req.body.age,
+    email: req.body.email
   });
   user.save()
       .then(newUser => res.send(newUser))
@@ -44,6 +45,7 @@ usersRouter.post('/', (req, res, next) => {
 
 usersRouter.put('/:userId', (req, res, next) => {
   if(req.body.age && !validator.isInt(req.body.age))
+    //TODO check user email
     next(new Error('Incorrect age format'));
 
   User

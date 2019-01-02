@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import jwt from "jsonwebtoken";
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
-  name: {
+  userName: {
     type: String,
     required: true,
     unique: true,
@@ -15,5 +16,21 @@ const UserSchema = new Schema({
   age: Number,
   hashedPassword: String
 }, { timestamps: true});
+
+UserSchema.methods.generateJWT = function(){
+  return jwt.sign(
+    {
+      email: this.email
+    },
+    process.env.JWT_SECRET_KEY
+  );
+};
+
+UserSchema.methods.toAuthJSON = function(){
+  return {
+    email: this.email,
+    token: this.generateJWT()
+  }
+};
 
 export const User = mongoose.model('user', UserSchema);

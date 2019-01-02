@@ -4,16 +4,18 @@ import session from 'express-session';
 import morgan from 'morgan';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-import { config } from './config';
 import { usersRouter } from './routers/users';
 import { authRouter } from "./routers/auth";
 import {recipesRouter} from "./routers/recipes";
 import {authState} from "./middlewares/authState";
 
+dotenv.config();
+
 // опции для cors-middleware
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: process.env.CLIENT_ORIGIN,
   optionsSuccessStatus: 200
 }
 
@@ -29,7 +31,7 @@ app.use(morgan('dev'));
 
 // настройки для session-middleware, указываем где в монго хранить сессию
 app.use(session({
-  secret: config.SESSION_SECRET_PHRASE,
+  secret: process.env.SESSION_SECRET_PHRASE,
   store: new MongoStore({mongooseConnection: mongoose.connection})
 }));
 
@@ -43,10 +45,11 @@ app.use('/recipes', cors(corsOptions), authState, recipesRouter);
 
 
 // порт
-const PORT = process.env.PORT || config.PORT;
+const PORT = process.env.PORT;
 // URL подключения (стандартный для монгоДБ)
-const url = config.MONGODB_CONNECTION_URL;
-const databaseName = config.DATABASE_NAME;
+const url = process.env.MONGODB_CONNECTION_URL;
+const databaseName = process.env.DATABASE_NAME;
+console.log(url, databaseName);
 
 mongoose.connect(`${url}/${databaseName}`, {useNewUrlParser: true})
   .then(() => {

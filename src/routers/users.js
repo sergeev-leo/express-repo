@@ -45,7 +45,6 @@ usersRouter.post('/', (req, res, next) => {
 
 usersRouter.put('/:userId', (req, res, next) => {
   if(req.body.age && !validator.isInt(req.body.age))
-    //TODO check user email
     next(new Error('Incorrect age format'));
 
   User

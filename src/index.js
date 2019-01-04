@@ -31,6 +31,7 @@ app.use(morgan('dev'));
 
 // настройки для session-middleware, указываем где в монго хранить сессию
 app.use(session({
+  key: process.env.SESSION_KEY,
   secret: process.env.SESSION_SECRET_PHRASE,
   store: new MongoStore({mongooseConnection: mongoose.connection})
 }));
